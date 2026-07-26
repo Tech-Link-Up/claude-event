@@ -12,12 +12,12 @@ You can either **build it yourself from scratch** by following [`CLASS-GUIDE.md`
    npm install
    ```
 
-2. Create a Supabase project and the `ideas` table (Steps 3–4 of the class guide).
+2. Create a Supabase project (Step 3 of the class guide). The `ideas` table comes from the migration in `supabase/migrations/` — see "How it's wired" below — or create it manually (Step 4 of the guide).
 
-3. Copy `.env.example` to `.env.local` and fill in your own values from the Supabase dashboard (**Project Settings → API Keys**):
+3. Copy `.env.example` to `.env` and fill in your own values from the Supabase dashboard (**Project Settings → API Keys**):
 
    ```bash
-   cp .env.example .env.local
+   cp .env.example .env
    ```
 
 4. Start the dev server:
@@ -30,6 +30,7 @@ Open [http://localhost:3000](http://localhost:3000) — you should see the ideas
 
 ## How it's wired
 
+- `supabase/migrations/` — the database schema as versioned SQL files. Apply them to your own project with `npx supabase login`, `npx supabase link`, then `npx supabase db push` (this replaces step 2's manual table creation).
 - `lib/supabase.ts` — the Supabase client, created with the **secret key**. `import "server-only"` makes it a build error to load this file in browser code.
 - `app/page.tsx` — a server component that queries the `ideas` table and renders HTML. The browser never talks to Supabase and never sees the key.
 - The database has Row Level Security enabled with **no policies**, so the public Supabase API returns nothing — this backend is the only way in.

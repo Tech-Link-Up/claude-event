@@ -141,12 +141,28 @@ Open **http://localhost:3000** in your browser. You should see the Next.js welco
 
 1. Go to [supabase.com/dashboard](https://supabase.com/dashboard) and click **New project**.
 2. Name it `builder-day`, set a database password (save it somewhere), pick the region closest to you.
-3. If you're shown **Security** options, keep the defaults: **Enable Data API** ✅ and **Automatically expose new tables** ✅ (that's the API our app talks to), and leave **Enable automatic RLS** unchecked — we'll enable RLS ourselves in Step 4.
+3. If you're shown **Security** options, keep the defaults: **Enable Data API** ✅ and **Automatically expose new tables** ✅ (that's the API our app talks to), and leave **Enable automatic RLS** unchecked — our own SQL enables RLS explicitly in Steps 4–5.
 4. Click **Create new project** and wait ~1 minute while it provisions. You just got a full Postgres database in the cloud, for free.
+5. Now grab your keys: go to **Project Settings → API Keys**. You need two values:
+   - **Project URL** (looks like `https://abcdefgh.supabase.co`)
+   - **Secret key** (under "Secret keys" — click **Reveal** to copy it; starts with `sb_secret_...`)
+
+   You'll also see a *publishable* key on that page — we're not using it. The difference: the publishable key is meant for browsers and is limited by database policies; the **secret key has full access to your database**, which is why it must only ever exist on the server — never shared, never committed, never in browser code.
+
+6. Give the keys to your app: create a file called `.env` in the root of your next.js folder (`builder-day-app`) with these two lines, pasting in your own values (there's a `.env.example` in the workshop repo with this exact format):
+
+   ```bash
+   SUPABASE_URL=https://your-project-id.supabase.co
+   SUPABASE_SECRET_KEY=sb_secret_your-key-here
+   ```
+
+> **Two things keep this key secret:** `.env` files are covered by `.gitignore`, so they never get committed to GitHub. And because the variable names do **not** start with `NEXT_PUBLIC_`, Next.js never includes them in the code it sends to browsers — they exist only on the server.
 
 ---
 
-## Step 4 — Create a table with some data
+## Step 4 (Optional to understand SQL) — Create a table by hand, once
+
+This is the only time in this class you'll run SQL by hand — Step 5 automates every future schema change. It's optional, but recommended: seeing what a table and a query look like makes everything after less magical. (If you skip it, Step 5 creates this table for you.)
 
 In the Supabase dashboard, open the **SQL Editor** (left sidebar) and run:
 - RLS ON with no policies means the public Data API is locked — anyone with the publishable key gets nothing. This is what we want.
@@ -175,39 +191,95 @@ alter table ideas enable row level security;
 
 If a **"Potential issue detected"** popup asks about Row Level Security, click **Run and enable RLS**. (Our SQL already enables it on the last line — the popup is Supabase being cautious. The rule for this class: the answer to any RLS prompt is always *enable*. RLS locks out the public API keys, never our backend — the secret key bypasses it.)
 
-Check the **Table Editor** (left sidebar) — you should see your 3 rows.
+---
+
+## Step 5 — Hand the schema to Claude (your first reusable prompt)
+
+From here on, nobody types schema changes into a dashboard. A **migration** is a SQL file that lives in your repo: you review it before it runs, git keeps its history, and the Supabase CLI tracks which ones have been applied so each runs exactly once. Reviewable, versioned, tracked — that combination is what makes AI-driven database changes safe.
+
+Paste this into Claude Code from inside your app folder. The schema change is described on the first lines — swap that description out for any future change and reuse the rest of the prompt forever:
+
+```text
+Schema change I want: create an "ideas" table with id, title, and
+created_at, seeded with 3 fun example app ideas.
+
+Make this change with the Supabase CLI and migration files. Check what's
+already set up and skip anything that's done:
+
+1. If there's no supabase/ folder, run: npx supabase init
+2. Check I'm logged in by running: npx supabase projects list
+   If that fails, tell me to run npx supabase login in my own terminal
+   (it opens a browser) and wait for me to confirm.
+3. Check this folder is linked to my project (npx supabase migration list
+   only works when linked). If not, tell me to run npx supabase link in my
+   own terminal — I'll pick my project and enter the database password I
+   saved when I created it.
+4. Make the schema change following these rules:
+   - Every change is a new file created with
+     npx supabase migration new <short_description>
+     Never edit a migration that has already been pushed — write a new one.
+   - Every new table gets Row Level Security enabled with NO policies:
+     only our backend, using the secret key, can touch the data.
+   - Write migrations that are safe even if part of the change was already
+     done by hand: create table if not exists, and guard seed inserts so
+     they only run when the table is empty.
+   - Show me the migration file and WAIT for my approval before running
+     npx supabase db push.
+5. After pushing, verify the change is live, then remind me to commit the
+   migration file to git.
+```
+
+Two one-time moments where Claude hands control back to you:
+
+- **`npx supabase login`** — run it in your own terminal; it opens a browser to authorize the CLI.
+- **`npx supabase link`** — pick your project from the list; it asks for the **database password** you saved in Step 3 (not an API key).
+
+The rules baked into that prompt are the takeaway, and they're worth keeping for life:
+
+- **Review before apply** — Claude shows you the SQL and waits; nothing touches your database until you approve, and the committed file is your audit trail.
+- **Append, never edit** — an applied migration is history; you change the database by adding a new file, not rewriting an old one.
+- **Every table starts locked** — RLS on, no policies, access only through your backend.
+
+**Verify:** `supabase/migrations/` contains a timestamped SQL file, and the dashboard's Table Editor shows `ideas` with 3 rows (exactly 3 even if you also did Step 4 — the guarded seed doesn't double up).
 
 ---
 
-## Step 5 — Connect Next.js to Supabase
+## Step 6 — Connect the app to Supabase (another reusable prompt)
 
-Install the Supabase client library (in your project folder, in a second terminal), plus a tiny helper we'll use as a safety guard:
+Everything left is app code. Paste this prompt into Claude Code — same shape as Step 5: check state first, automate what's automatable, hand the manual steps back to the human:
 
-```bash
-npm install @supabase/supabase-js server-only
+```text
+I'm in a Next.js app. Connect it to my Supabase database with ALL database
+access on the server — we use the secret key, which must never reach the
+browser. Check the current state before acting, and if something is already
+done, verify it instead of redoing it:
+
+1. Confirm you can see the folder is a Next.js app.
+2. Check .env or .env.local exists in the app root and has SUPABASE_URL and
+   SUPABASE_SECRET_KEY with real-looking values
+   (https://<project-id>.supabase.co and sb_secret_...).
+   Never print the values. If they're missing or still placeholders, stop,
+   give me exact instructions to get them (Supabase dashboard → Project
+   Settings → API Keys), and wait for my confirmation.
+3. Install @supabase/supabase-js and server-only if not already installed.
+4. Create lib/supabase.ts exporting a Supabase client built from those env
+   vars, with import "server-only" as its first line so browser code can
+   never bundle it.
+5. Replace app/page.tsx with an async server component that selects all rows
+   from the "ideas" table and renders the titles as a simple styled list.
+   Include export const dynamic = "force-dynamic" so every request fetches
+   fresh data.
+6. Restart the dev server and verify the page really shows rows from my
+   database. If the query errors or returns nothing, diagnose it — and if
+   the "ideas" table doesn't exist, don't create it ad-hoc: stop and tell
+   me to run my schema migration prompt first.
+7. Finish with a short summary of every file you created or changed and why.
 ```
 
-Get your keys: in the Supabase dashboard go to **Project Settings → API Keys**. You need two values:
 
-- **Project URL** (looks like `https://abcdefgh.supabase.co`)
-- **Secret key** (under "Secret keys" — click **Reveal** to copy it; starts with `sb_secret_...`)
+### What Claude will build
 
-You'll also see a *publishable* key on that page — we're not using it. The difference: the publishable key is meant for browsers and is limited by database policies; the **secret key has full access to your database**, which is why it must only ever exist on the server.
-
-Create a file called `.env.local` in the root of your project (there's a `.env.example` in the workshop repo with this exact format — copy it into your app as `.env.local` and fill in your values):
-
-```bash
-SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_SECRET_KEY=sb_secret_your-key-here
-```
-
-> **Two things keep this key secret:** `.env.local` is in `.gitignore`, so it never gets committed to GitHub. And because the variable names do **not** start with `NEXT_PUBLIC_`, Next.js never includes them in the code it sends to browsers — they exist only on the server.
-
----
-
-## Step 6 — Create the Supabase client
-
-Create a file `lib/supabase.ts`:
+Two files. `lib/supabase.ts` — the one object your backend uses to talk to the database:
 
 ```ts
 import "server-only";
@@ -219,13 +291,9 @@ export const supabase = createClient(
 );
 ```
 
-This is the one object your backend uses to talk to the database. The `import "server-only"` line is our safety guard: if anyone ever imports this file into browser code (a client component), the build fails immediately instead of leaking the key.
+The `import "server-only"` line is a safety guard: if anyone ever imports this file into browser code (a client component), the build fails immediately instead of leaking the key.
 
----
-
-## Step 7 — Show real data on the page
-
-Replace the contents of `app/page.tsx` with:
+And `app/page.tsx` — a server component that queries the table and sends the browser finished HTML:
 
 ```tsx
 import { supabase } from "@/lib/supabase";
@@ -252,9 +320,7 @@ export default async function Home() {
 }
 ```
 
-Restart the dev server (`Ctrl+C`, then `npm run dev` — needed so it picks up `.env.local`), and refresh **http://localhost:3000**.
-
-🎉 **You're fullstack.** This component runs only on Next.js's server — it queries Postgres with the secret key and sends the browser finished HTML. The key never leaves the server, and the database itself rejects anyone who isn't your backend.
+🎉 **You're fullstack.** The page runs only on Next.js's server — it queries Postgres with the secret key, the browser never sees anything but HTML, and the database rejects anyone who isn't your backend.
 
 **Prove it:** add a new row in the Supabase Table Editor, refresh your browser, and watch it appear.
 
@@ -263,21 +329,23 @@ Restart the dev server (`Ctrl+C`, then `npm run dev` — needed so it picks up `
 ## Stretch goals (if we have time)
 
 - **Insert from the app** — add a [Server Action](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) with a form that calls `supabase.from("ideas").insert(...)`. Because inserts also go through the backend with the secret key, no database policy changes are needed.
-- **Deploy** — push to GitHub, import the repo into [Vercel](https://vercel.com), and add `SUPABASE_URL` and `SUPABASE_SECRET_KEY` under **Settings → Environment Variables**. Vercel stores them encrypted and only your server code can read them — same rules as `.env.local`.
+- **Deploy** — push to GitHub, import the repo into [Vercel](https://vercel.com), and add `SUPABASE_URL` and `SUPABASE_SECRET_KEY` under **Settings → Environment Variables**. Vercel stores them encrypted and only your server code can read them — same rules as `.env`.
 - **Auth** — when you want each user to have *their own* data, add sign-up/login with `@supabase/ssr` ([docs](https://supabase.com/docs/guides/auth/server-side/nextjs)), so your backend knows who's asking before it queries.
 
 ---
 
 ## If you fall behind
 
-Flag the instructor — most problems here are a one-line fix. The finished app also lives in this repo under `builder-day-app/` (its README explains how to run it). It's the exact code this guide builds, so you can compare your files against it or continue from it at any point — you'll still need your own Supabase project and `.env.local` (Steps 3–5).
+Flag the instructor — most problems here are a one-line fix. The finished app also lives in this repo under `builder-day-app/` (its README explains how to run it). It's the exact code this guide builds, so you can compare your files against it or continue from it at any point — you'll still need your own Supabase project and `.env` file (Step 3) — the Step 5 prompt can then rebuild the schema from the repo's migration files.
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
 | `command not found: npx` | Node.js isn't installed (or terminal needs restarting) — see Step 0 |
-| Page shows no ideas, no error | Check `.env.local` values, then restart the dev server (`Ctrl+C`, `npm run dev`) |
-| Empty list but the table has rows | You're probably using the *publishable* key — Step 5 needs the **secret** key (`sb_secret_...`). Fix `.env.local` and restart the dev server |
+| Page shows no ideas, no error | Check `.env` values, then restart the dev server (`Ctrl+C`, `npm run dev`) |
+| Empty list but the table has rows | You're probably using the *publishable* key — Step 3 needs the **secret** key (`sb_secret_...`). Fix `.env` and restart the dev server |
 | Build error mentioning `server-only` | You imported `lib/supabase.ts` into a client component — that's the guard working. Query in a server component and pass data down as props |
+| Supabase CLI says you're not logged in | Run `npx supabase login` in your own terminal (it opens a browser), then re-run the prompt |
+| `supabase link` / `db push` asks for a password | That's the **database password** from Step 3, not an API key. Forgot it? Reset it in the dashboard under **Project Settings → Database** |
 | `fetch failed` / network error | Project URL is wrong, or the Supabase project is still provisioning |
