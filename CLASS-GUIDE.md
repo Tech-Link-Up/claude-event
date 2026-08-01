@@ -22,8 +22,6 @@ flowchart LR
 
 The frontend and backend are the same Next.js app — `npm run dev` runs both on your laptop; only the database lives in the cloud. When you deploy later to Vercel, the Next.js piece moves from your laptop to Vercel, and your browser downlaods the frontend.
 
-> **Starter code:** the finished app lives in this repo under [`builder-day-app/`](builder-day-app/). We'll build it from scratch together — but it's there as a working reference, a catch-up point, or a starting place for your own project.
-
 **Who does what — the two tags in this guide:**
 
 - 🧑 **You do it** — accounts, browsers, passwords, approvals. The steps only a human can do.
@@ -488,8 +486,6 @@ When phase 1 checks out in your browser, the rest of the day is one sentence at 
 ## If you get stuck
 
 Your first move is always the same: paste the exact error (or describe what you expected vs. what happened) into Claude Code and say which step you're on — most problems here are a one-line fix, and Claude is sitting in your project with full context. In the workshop room, the instructor is your second opinion.
-
-There's also a safety net: the finished app lives in this repo under `builder-day-app/` (its README explains how to run it). It's the exact code this guide builds, so you can compare your files against it or continue from it at any point — you'll still need your own Supabase project and `.env` file (Step 3) and the CLI connected (Step 5), and the Step 6 prompt can then rebuild the schema from the repo's migration files.
 
 ## Troubleshooting
 
