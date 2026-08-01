@@ -14,3 +14,4 @@ node_modules/
 # slide deck — heavy artefacts kept out of the repo
 slides/video/
 slides/out/
+slides/assets/

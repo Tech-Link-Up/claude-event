@@ -22,6 +22,17 @@ No build step, no server, no dependencies. It's one self-contained HTML file plu
 
 `slides/index.html` is a contact sheet of all 25 slides — quickest way to review without clicking through.
 
+
+## ⚠ Assets are not in this repo
+
+`deck.html` is the source of truth for structure and copy, but it loads images,
+QR codes and the Copernicus font from a `slides/assets/` folder that is **deliberately
+kept out of git** to keep the repo light. Same for `slides/video/` and `slides/out/`.
+
+Opening `deck.html` straight from a fresh clone will show the layout and text with
+broken images. To see it fully rendered, get the `assets/`, `out/` and `video/`
+folders from Travis and drop them in alongside `deck.html`.
+
 ## What's here
 
 ```
