@@ -3,6 +3,25 @@
 
 By the end of this session you'll have a Next.js app running locally that reads live data from a real Postgres database hosted on Supabase.
 
+**Here's the whole thing in one picture** — three pieces, and every step of this guide builds or connects one of them:
+
+```mermaid
+flowchart LR
+    subgraph laptop["💻 Your laptop"]
+        browser["🌐 Browser<br/><b>the frontend</b><br/>localhost:3000"]
+        server["⚙️ Next.js server<br/><b>the backend</b><br/>holds the secret key"]
+    end
+    subgraph cloud["☁️ Supabase (cloud)"]
+        db[("🗄️ Postgres<br/><b>the database</b><br/>locked to everyone<br/>but your backend")]
+    end
+    browser -- "1 · you open the page" --> server
+    server -- "2 · query, signed with the secret key" --> db
+    db -- "3 · returns data" --> server
+    server -- "4 · finished HTML" --> browser
+```
+
+The frontend and backend are the same Next.js app — `npm run dev` runs both on your laptop; only the database lives in the cloud. When you deploy later to Vercel, the Next.js piece moves from your laptop to Vercel, and your browser downlaods the frontend.
+
 > **Starter code:** the finished app lives in this repo under [`builder-day-app/`](builder-day-app/). We'll build it from scratch together — but it's there as a working reference, a catch-up point, or a starting place for your own project.
 
 **Who does what — the two tags in this guide:**
