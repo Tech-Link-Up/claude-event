@@ -68,21 +68,21 @@ h2{font-family:var(--disp);font-weight:500;font-size:54px;line-height:1.1;
 .vidwrap video{width:100%;height:100%;object-fit:contain;display:block}
 
 /* ---- holding cards ---------------------------------------------------- */
-.cards{display:grid;grid-template-columns:1fr 1.35fr;gap:32px}
-.card{border:1.5px solid var(--rule);background:var(--white);padding:38px 40px;
-  display:flex;align-items:center;gap:32px;min-height:250px}
+.cards{display:grid;grid-template-columns:0.8fr 1.15fr 1.05fr;gap:18px}
+.card{border:1.5px solid var(--rule);background:var(--white);padding:24px 22px;
+  display:flex;align-items:center;gap:16px;min-height:240px}
 .card h3{font-family:var(--sans);font-weight:700;font-size:13px;letter-spacing:.2em;
   color:var(--clay);text-transform:uppercase;margin-bottom:18px}
-.card .lg{font-family:var(--disp);font-size:38px;line-height:1.2;color:var(--ink)}
-.card .sm{font-family:var(--sans);font-size:17px;color:var(--mute);margin-top:12px}
-.card img.qr{width:230px;height:230px;flex:none}
+.card .lg{font-family:var(--disp);font-size:26px;line-height:1.2;color:var(--ink)}
+.card .sm{font-family:var(--sans);font-size:14px;color:var(--mute);margin-top:12px}
+.card img.qr{width:146px;height:146px;flex:none}
 .blank{display:inline-block;min-width:270px;border-bottom:3px dashed var(--clay);height:44px}
 
 
 .wifi{margin-bottom:20px}
 .wifi .k{display:block;font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.2em;
   text-transform:uppercase;color:var(--mute);margin-bottom:6px}
-.wifi .v{display:block;font-family:var(--disp);font-size:40px;line-height:1.1;color:var(--ink)}
+.wifi .v{display:block;font-family:var(--disp);font-size:29px;line-height:1.1;color:var(--ink)}
 
 /* ---- timeline --------------------------------------------------------- */
 .tl{position:relative;margin-top:70px;padding-top:40px}
@@ -94,6 +94,7 @@ h2{font-family:var(--disp);font-weight:500;font-size:54px;line-height:1.1;
 .tl .t{font-family:var(--disp);font-size:34px;color:var(--ink)}
 .tl .l{font-family:var(--sans);font-size:17px;color:var(--slate);margin-top:9px;line-height:1.4}
 .tl .n.hi .t{color:var(--clay)}
+.tl .food{color:var(--clay);font-weight:600}
 
 /* ---- badge wall (LA pattern) ------------------------------------------ */
 .wall{display:grid;grid-template-columns:repeat(4,1fr);gap:52px;margin-top:56px}
@@ -255,6 +256,14 @@ h2{font-family:var(--disp);font-weight:500;font-size:54px;line-height:1.1;
         </div>
         <img class="qr" src="assets/qr-guide.png" alt="">
       </div>
+      <div class="card">
+        <div>
+          <h3>$50 API credits — first 60</h3>
+          <div class="lg" style="font-size:26px">Claim any time today</div>
+          <div class="sm">Org ID from console.anthropic.com.<br>Not Claude Code — that's Pro, $20/mo.</div>
+        </div>
+        <img class="qr" src="assets/qr-credits.png" alt="">
+      </div>
     </div>
   </div>
 </section>
@@ -275,15 +284,15 @@ h2{font-family:var(--disp);font-weight:500;font-size:54px;line-height:1.1;
     <div class="tl">
       <div class="line"></div>
       <div class="nodes">
-        <div class="n hi"><div class="dot"></div><div class="t">1:00</div><div class="l">Welcome</div></div>
-        <div class="n"><div class="dot"></div><div class="t">1:20</div><div class="l">How a full stack<br>app works</div></div>
-        <div class="n"><div class="dot"></div><div class="t">1:45</div><div class="l">Set up<br>with Danny</div></div>
-        <div class="n"><div class="dot"></div><div class="t">2:30</div><div class="l">Build<br>your app</div></div>
-        <div class="n"><div class="dot"></div><div class="t">4:30</div><div class="l">Show<br>and tell</div></div>
+        <div class="n hi"><div class="dot"></div><div class="t">1:00</div><div class="l">Welcome<br>Claude Community</div></div>
+        <div class="n"><div class="dot"></div><div class="t">1:30</div><div class="l">Set up<br>with Danny</div></div>
+        <div class="n"><div class="dot"></div><div class="t">2:30</div><div class="l">Build your app<br><span class="food">food arrives</span></div></div>
+        <div class="n"><div class="dot"></div><div class="t">4:15</div><div class="l">Demos<br>show what you built</div></div>
+        <div class="n"><div class="dot"></div><div class="t">4:45</div><div class="l">Awards<br>&amp; wrap up</div></div>
       </div>
     </div>
   </div>
-  <div class="bottom"><div class="body">Two hours of build time. That's the point of the day.</div></div>
+  <div class="bottom"><div class="body">Nearly two hours of build time. That's the point of the day.</div></div>
 </section>
 
 <!-- 03 ─ GLOBAL ─ LA badge-wall pattern -->
@@ -441,6 +450,26 @@ h2{font-family:var(--disp);font-weight:500;font-size:54px;line-height:1.1;
   <div class="bottom"><div class="cue">&laquo; real estate, anti-trafficking &mdash; tell me what you want &raquo;</div></div>
 </section>
 
+<!-- 20 ─ CREDITS (moved earlier) -->
+<section class="s" data-sec="SET UP">
+  <div class="stack">
+    <h1 style="font-size:64px">$50 in API credits — <em>first 60</em>.</h1>
+    <div class="warns">
+      <div class="warn"><h4>This is not Claude Code</h4>
+        <p>Credits are for the API, later. Claude Code still needs Pro, $20 a month.</p></div>
+      <div class="warn"><h4>Use the same email</h4>
+        <p>Sign in to console.anthropic.com with the same address as your Claude account,
+           and submit your Org ID.</p></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div style="display:flex;align-items:center;gap:36px">
+      <img src="assets/qr-credits.png" style="width:300px" alt="">
+      <div class="small">One scan, one claim. Wrong ID gets rejected and can't be fixed.</div>
+    </div>
+  </div>
+</section>
+
 <!-- 13 ─ ANATOMY / CONTRAST -->
 <section class="s" data-sec="PRIMER">
   <div class="stack">
@@ -572,26 +601,6 @@ h2{font-family:var(--disp);font-weight:500;font-size:54px;line-height:1.1;
   </div>
 </section>
 
-<!-- 20 ─ CREDITS -->
-<section class="s" data-sec="SET UP">
-  <div class="stack">
-    <h1 style="font-size:64px">$50 in API credits — <em>first 60</em>.</h1>
-    <div class="warns">
-      <div class="warn"><h4>This is not Claude Code</h4>
-        <p>Credits are for the API, later. Claude Code still needs Pro, $20 a month.</p></div>
-      <div class="warn"><h4>Use the same email</h4>
-        <p>Sign in to console.anthropic.com with the same address as your Claude account,
-           and submit your Org ID.</p></div>
-    </div>
-  </div>
-  <div class="bottom">
-    <div style="display:flex;align-items:center;gap:36px">
-      <img src="assets/qr-credits.png" style="width:300px" alt="">
-      <div class="small">One scan, one claim. Wrong ID gets rejected and can't be fixed.</div>
-    </div>
-  </div>
-</section>
-
 <!-- 21 ─ SET UP -->
 <section class="s" data-sec="SET UP">
   <div class="stack"><h1>Danny Ronson <em>takes it from here</em>.</h1></div>
@@ -604,6 +613,7 @@ h2{font-family:var(--disp);font-weight:500;font-size:54px;line-height:1.1;
   <div class="bottom">
     <div class="body" style="max-width:none">Goal: everyone set up within the hour.<br>
       TAs are in the room — raise your hand and someone comes.</div>
+    <div class="cue" style="margin-top:16px">&laquo; remind the room about the $50 credits three times &mdash; at the start, mid-setup, and as people finish &raquo;</div>
   </div>
 </section>
 
