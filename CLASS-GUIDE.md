@@ -153,7 +153,7 @@ cd builder-day-app
 npm run dev
 ```
 
-Open **http://localhost:3000** in your browser. You should see the Next.js welcome page. This is your frontend, running locally. Keep this terminal running — it auto-reloads as you edit code.
+Open the address your terminal prints after **`Local:`** — usually **http://localhost:3000**, but if something else is already using that port it will quietly pick the next one (`3001`, `3002`, …). Use whatever URL the terminal actually shows. You should see the Next.js welcome page. This is your frontend, running locally. Keep this terminal running — it auto-reloads as you edit code.
 
 ---
 
@@ -169,12 +169,25 @@ Open **http://localhost:3000** in your browser. You should see the Next.js welco
 
    You'll also see a *publishable* key on that page — we're not using it. The difference: the publishable key is meant for browsers and is limited by database policies; the **secret key has full access to your database**, which is why it must only ever exist on the server — never shared, never committed, never in browser code.
 
-6. Give the keys to your app: create a file called `.env` in the root of your next.js folder (`builder-day-app`) with these two lines, pasting in your own values (there's a `.env.example` in the workshop repo with this exact format):
+6. Give the keys to your app. The file is called `.env` and lives in the root of your Next.js folder (`builder-day-app`). Beginners trip on the *file* (wrong name, wrong folder) far more than the values — so you have two ways to create it:
+
+   - **🤖 Let Claude make the empty file (easiest):** paste this into Claude Code —
+
+     ```text
+     Create a .env file in the builder-day-app root with two empty
+     variables, SUPABASE_URL= and SUPABASE_SECRET_KEY=. Don't ask me
+     for the secret key — I'll paste the values in myself.
+     ```
+
+     Claude puts the file in the right place with the right names; you just fill in the two values in VS Code.
+   - **🧑 Or make it yourself:** create `.env` in the `builder-day-app` root (there's a `.env.example` in the workshop repo with this exact format) and paste your values in.
 
    ```bash
    SUPABASE_URL=https://your-project-id.supabase.co
    SUPABASE_SECRET_KEY=sb_secret_your-key-here
    ```
+
+   **Either way, you paste the secret key into the *file*, never into the Claude chat.** Keeping secrets out of the AI conversation is the habit worth building — Claude sets up the file, you own the secret.
 
 > **Two things keep this key secret:** `.env` files are covered by `.gitignore`, so they never get committed to GitHub. And because the variable names do **not** start with `NEXT_PUBLIC_`, Next.js never includes them in the code it sends to browsers — they exist only on the server.
 
@@ -454,7 +467,7 @@ Read PLAN.md and build PHASE 1 ONLY.
 
 When phase 1 checks out in your browser, the rest of the day is one sentence at a time: *"Great — build phase 2."*
 
-**✅ You'll know it worked when:** phase 1 of *your* app is live at localhost:3000 — your data model, your page, and you reviewed every change that got it there.
+**✅ You'll know it worked when:** phase 1 of *your* app is live in your browser (at the same `localhost` address from Step 2) — your data model, your page, and you reviewed every change that got it there.
 
 ---
 
@@ -478,8 +491,10 @@ There's also a safety net: the finished app lives in this repo under `builder-da
 |---|---|
 | **Anything not in this table** | Paste the exact error into Claude Code and say which step you're on — that's the fastest fix for everything below, too |
 | `command not found: npx` | Node.js isn't installed (or terminal needs restarting) — see Step 0 |
+| The app opened on a different port (`3001`, `3002`…) | Normal — port 3000 was busy, so Next.js picked the next free one. Use the exact `Local:` URL your terminal printed; nothing is broken |
 | Git says "Please tell me who you are" | Git wants a name/email to stamp on commits (no account involved). Tell Claude — it'll set them with `git config --global`. Use the same email as your GitHub account |
 | Page shows no ideas, no error | Check `.env` values, then restart the dev server (`Ctrl+C`, `npm run dev`) |
+| `.env` isn't being read (values look ignored) | Make sure the file is named exactly `.env` (not `.env.txt`) and sits **in the `builder-day-app` folder**, not a parent folder. If unsure, ask Claude: *"confirm my .env is in the right place and correctly named — don't print the values"* |
 | Empty list but the table has rows | You're probably using the *publishable* key — Step 3 needs the **secret** key (`sb_secret_...`). Fix `.env` and restart the dev server |
 | Build error mentioning `server-only` | You imported `lib/supabase.ts` into a client component — that's the guard working. Query in a server component and pass data down as props |
 | Supabase CLI says you're not logged in | Run `npx supabase login` in your own terminal (it opens a browser), then re-run the prompt |
