@@ -440,20 +440,89 @@ The class app proved the loop: describe → review → verify. Now you point tha
 
 **The real skill in Part 2 is scope management.** Bring an ambitious idea — the workshop and planning prompts exist to carve a *version 1* out of it that you can watch working today, with everything else parked on a "later" list, not thrown away. For most ideas the fastest version 1 is a single-user tool — something for *you*, no sign-up — and it's already secure that way, because the database only talks to your backend (that's what the RLS work bought you). Multi-user accounts make a great later phase: the **Auth** stretch goal below is the door.
 
-## Step 9 — 🤖 Workshop the idea (Claude interviews you)
+## The loop
 
-Don't start by writing a spec — let Claude interview you into one.
+Part 1 you followed prompts. Part 2 you write them. Every build runs the same five steps:
+
+```mermaid
+flowchart LR
+    A["1 CLARIFY<br/>Step 9"] --> B["2 PLAN<br/>Step 10"]
+    B --> C["3 BUILD<br/>Step 11"] --> D["4 REVIEW<br/>Step 11.5"]
+    D --> E["5 SHIP<br/>Step 12"]
+    D -- "not right yet" --> C
+    E -- "next phase" --> C
+```
+
+1. **Clarify** — say what you want, then let Claude interrogate it. The gap between what's in your head and what you typed is where bad output comes from.
+2. **Plan** — small ordered phases, on paper. Plans are cheap to change; code isn't.
+3. **Build** — one phase at a time. Small steps, small mistakes.
+4. **Review** — open the browser and use it. "Done" is a claim, not a fact.
+5. **Ship** — push to GitHub, Vercel puts it on the internet.
+
+**The rule that keeps you out of trouble:** never build the next thing until you've seen the last thing work.
+
+> **localhost:3000 is your review window.** `npm run dev` runs a web server on your own laptop, and `localhost` is what a computer calls itself — so it's your app, visible only to you. It reloads itself every time Claude edits a file. If the page won't load, the server isn't running: check that terminal. Claude can't see your screen, but it can open the page itself — *"Open http://localhost:3000, tell me what actually renders, and compare it to what we intended."*
+
+---
+
+## Preflight — two things before you start
+
+### 1 · Be in the right place
+
+Claude works on whatever folder it was started in, so it has to be your app folder — `builder-day-app`, the one with `app/`, `lib/` and `supabase/` inside it.
+
+- **In the terminal:** it's the same session you've had open all morning — you're already there. Not sure? Ask Claude: *"What folder are you working in?"*
+- **In VS Code:** **File → Open Folder →** `builder-day-app`, then open a terminal in that window (**Terminal → New Terminal**) and run `claude`.
+
+### 2 · Give Claude the workshop repo
+
+This repo holds `AGENTS.md` — the standing rules for the project: every database change through a reviewed migration, every table locked down, secrets never in the browser. Claude has been told those rules one prompt at a time all morning. Now it gets them permanently.
 
 **📋 Paste this into Claude Code:**
 
 ```text
-I want to build my own app now. Interview me to figure out what it
-should be.
+https://github.com/Tech-Link-Up/claude-event
+
+That's the workshop repo. Download its AGENTS.md and CLAUDE.md into the
+folder you're working in — they're the standing rules for this project.
+Read them and list back the rules you'll be following for the rest of
+the day.
+
+Then tell me if anything looks off: I should be in builder-day-app (it
+has app/, lib/ and supabase/ in it), and http://localhost:3000 should
+still be showing my ideas list.
+```
+
+**✅ You'll know it worked when:** Claude lists the rules back to you in its own words, and says the folder and the page are fine.
+
+> **Why this matters more than it looks.** From your next session onward Claude reads those files automatically, every time, without being asked. **Rules that matter belong in a file, not in a prompt you have to remember to repeat.**
+
+---
+
+## Step 9 — 🤖 Workshop the idea (you describe it, Claude interrogates it)
+
+Two things happen here, in this order: **you say what you want**, then **Claude pokes holes in it.** Don't skip the first part — an AI handed a blank page asks generic questions.
+
+Fill in the four blanks. Rough is fine.
+
+**📋 Paste this into Claude Code:**
+
+```text
+I want to build my own app. Here's my starting idea — it's rough, and I
+expect you to poke holes in it.
+
+WHAT IT IS: <one or two sentences. "A tool to track which plants I've
+  watered and when.">
+THE PROBLEM: <what's annoying about how you do this today.>
+THE ONE THING IT MUST DO WELL: <if it only did one thing, this is it.>
+WHAT I THINK IT STORES: <a guess at the data — no wrong answers.>
+
+Now interview me:
 
 - Ask me what you need to know in small batches I can answer in one
-  reply, with a quick follow-up round if my answers change the picture.
-- Cover: the problem I'm solving for myself, the one thing the app must
-  do well, and the data it stores.
+  reply, with a follow-up round if my answers change the picture.
+- Push back where my idea is vague or too big, and tell me what you'd
+  have had to invent if I hadn't been asked.
 - Treat scope as a design tool: keep my ambitious version as the
   destination, and carve out a version 1 I can watch working in my
   browser today. For most ideas the fastest version 1 is a single-user
@@ -463,6 +532,8 @@ should be.
   store), and a Later list holding everything we deferred. Keep it
   under a page.
 ```
+
+> **Answer in your own words, not technical ones.** "I want to see today's plants first" beats "I need a filtered sorted view." Describe the outcome; let Claude pick the mechanism.
 
 Stuck for an idea? Steal one of these — each is a proven one-afternoon build:
 
@@ -476,7 +547,7 @@ Stuck for an idea? Steal one of these — each is a proven one-afternoon build:
 | **Meeting transcriber** | Upload a recording, get a transcript and an AI summary — never take meeting notes by hand again |
 | **Job application tracker** | Paste a job posting, AI extracts the role and deadline, and you track status through applied → interview → offer/reject |
 
-**✅ You'll know it worked when:** `IDEA.md` exists and describes something you'd actually use.
+**✅ You'll know it worked when:** `IDEA.md` exists and describes something you'd actually use — and at least one of Claude's questions made you change your mind.
 
 ## Step 10 — 🤖 Turn the idea into a phased plan
 
@@ -523,10 +594,101 @@ When phase 1 checks out in your browser, the rest of the day is one sentence at 
 
 ---
 
+## Step 11.5 — 🧑 Check it before you build more
+
+Claude will tell you the phase is done. That's a claim. Turning it into a fact takes two minutes and saves you an hour of untangling four broken features at once.
+
+```
+ 1 · LOOK       2 · USE          3 · CHECK DATA    4 · SAVE
+ refresh        click it,        is the row        commit — a
+ localhost:3000 submit the       actually in       working phase
+ → does it      form → does it   Supabase's        in git is a
+ render, and    do the thing?    Table Editor,     place you can
+ does the old   Then submit it   with the right    always get
+ stuff still    empty once.      values?           back to.
+ work?
+```
+
+**📋 When something's off, paste this — don't describe the fix:**
+
+```text
+Here's what I expected: <what you thought would happen>
+Here's what actually happened: <what you saw — paste any error text>
+I'm on phase <N> of PLAN.md.
+
+Before changing anything: open the page yourself, look at the relevant
+code and the terminal output, and tell me what you think the cause is.
+Then propose a fix and wait for my go-ahead.
+```
+
+**📋 When it checks out, lock it in:**
+
+```text
+Phase <N> works — I verified it in the browser and the data looks right
+in Supabase. Commit it with a clear message, then tell me in one
+paragraph what's working now and what phase is next.
+```
+
+> **Why "wait for my go-ahead."** The fastest way to a mess is letting an AI fix a symptom it hasn't diagnosed. Making it name the cause out loud catches wrong guesses before they become wrong code.
+
+**✅ You'll know it worked when:** you've seen it work yourself, the data is in the database, and `git log` has a commit for it. *Now* say "build phase 2."
+
+---
+
+## Step 12 — 🤖 Ship it: laptop to internet
+
+Your app lives in one place: your laptop. Here's the pipeline that puts it online — you already own three of the four pieces.
+
+```mermaid
+flowchart LR
+    A["💻 Your laptop<br/>localhost:3000"] -- "git push" --> B["🐙 GitHub<br/>code + full history"]
+    B -- "auto-deploys" --> C["▲ Vercel<br/>builds and hosts"]
+    C --> D["🌐 your-app.vercel.app<br/>a link you can send"]
+    E[("🗄️ Supabase<br/>one database, shared")] -.-> A
+    E -.-> C
+```
+
+| Piece | What it is | You touch it |
+|---|---|---|
+| **Laptop** | Where you build. Fast, private, breakable | all day |
+| **GitHub** | Permanent home of your code and every save point. Also your backup — if the laptop died tonight, the project wouldn't | `git push` |
+| **Vercel** | Watches GitHub. Every push it rebuilds and puts the new version live. That's all "CI/CD" means | nothing, after setup |
+| **Supabase** | One database, used by both your laptop and the live site | migrations only |
+
+**The thing that trips everyone up:** `.env` never leaves your laptop — that's the point of it being gitignored. So Vercel has no keys until you paste them in there yourself. Add them **on the import screen**, before the first build, or your live site errors while localhost works fine.
+
+**📋 Paste this into Claude Code:**
+
+```text
+I want to put this app on the internet. Walk me through it, checking
+what's done at each stage and stopping where you need me:
+
+1. Confirm git status is clean and .env is NOT tracked.
+2. Create a GitHub repo for builder-day-app and push to it. If the gh
+   CLI isn't installed or I'm not logged in, give me the exact commands
+   to run in my own terminal and wait for me.
+3. Then give me the clicks to import that repo at vercel.com/new.
+4. Tell me which environment variables to add on Vercel's import screen,
+   matching my .env. List the variable NAMES only — never print my
+   values.
+5. Once I tell you it's deployed, check the live URL and confirm it
+   renders real data. If it errors, diagnose it — missing environment
+   variables is the usual cause.
+6. Finish by telling me what happens next time I git push.
+```
+
+**✅ You'll know it worked when:** a `your-app.vercel.app` URL loads your app with your real data, and you can text it to somebody.
+
+**Shipping is one sentence from here.** Build a phase → check it (Step 11.5) → `git push`. Live in about a minute.
+
+> **Careful with the database now.** Local and live share one Supabase project, so a migration you push changes what the live site is using. That's exactly why every schema change goes through a file you review first.
+
+---
+
 ## Stretch goals (if you finish early — or keep going after)
 
 - **Insert from the app** — add a [Server Action](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) with a form that calls `supabase.from("ideas").insert(...)`. Because inserts also go through the backend with the secret key, no database policy changes are needed.
-- **Deploy** — push to GitHub, import the repo into [Vercel](https://vercel.com), and add `SUPABASE_URL` and `SUPABASE_SECRET_KEY` under **Settings → Environment Variables**. Vercel stores them encrypted and only your server code can read them — same rules as `.env`.
+- **Deploy** — see Step 12.
 - **Auth** — when you want each user to have *their own* data, add sign-up/login with `@supabase/ssr` ([docs](https://supabase.com/docs/guides/auth/server-side/nextjs)), so your backend knows who's asking before it queries.
 
 ---
@@ -550,3 +712,29 @@ Your first move is always the same: paste the exact error (or describe what you 
 | `supabase link` says "Finished" but `migration list` / `db push` still says not linked | You ran it from the wrong folder. `cd builder-day-app` (the folder with `supabase/migrations/`) and run `npx supabase link` again there |
 | `db push` prints a Docker daemon connection error | Harmless if Docker Desktop isn't running — that only affects local migration-catalog caching. Your migration still pushed; confirm with `npx supabase migration list` |
 | `fetch failed` / network error | Project URL is wrong, or the Supabase project is still provisioning |
+
+---
+
+## After today — where to go next
+
+You have the loop: **clarify → plan → build → review → ship.** That scales a long way on its own. When projects get bigger, other people have packaged their version of it into installable **skills** — reusable instruction sets Claude Code loads, the same way it loaded this workshop's `AGENTS.md`.
+
+| Kit | What it gives you | Best for |
+|---|---|---|
+| **[Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin)** (Every) | A full pipeline as slash commands — `/ce-brainstorm`, `/ce-plan`, `/ce-work`, `/ce-code-review`, `/ce-compound`. It writes down what it learns so the next task starts smarter | Multi-week projects wanting structure and thorough review |
+| **[Skills for Real Engineers](https://github.com/mattpocock/skills)** (Matt Pocock) | Smaller skills you own and edit — `/grill-me` (relentless interrogation of your idea), `/tdd`, `/diagnosing-bugs`, `/code-review` | Sharpening individual habits rather than adopting a whole process |
+
+Install later, not today:
+
+```text
+/plugin marketplace add EveryInc/compound-engineering-plugin
+/plugin install compound-engineering
+```
+
+```text
+claude plugins install mattpocock-skills
+```
+
+> **⚠️ Don't install either one today.** Both are excellent and both are heavy — they load a lot of instructions into every conversation, which burns your usage limits fast and adds process you don't need for a one-afternoon build. Ship one app first.
+
+Notice what they share with today. `/ce-brainstorm` is your Step 9. `/ce-plan` is Step 10. `/grill-me` is the interview. `/ce-code-review` is Step 11.5. Nobody has invented a better loop — they've just built sharper tools for each station on it. **You already know the loop. That was the class.**
