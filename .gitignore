@@ -10,3 +10,7 @@ node_modules/
 .next/
 .env*
 !.env.example
+
+# slide deck — heavy artefacts kept out of the repo
+slides/video/
+slides/out/
