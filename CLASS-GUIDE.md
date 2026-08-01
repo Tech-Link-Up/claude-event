@@ -139,10 +139,13 @@ npx create-next-app@latest builder-day-app --ts --eslint --tailwind --app --no-s
 
 confirm the builder-day-app
 folder exists and give me a one-line summary of what was created.
-Once created, test out to make sure it is created correctly and able to be run by using npm run dev, fix any issues you encounter if possible
+Once created, test out to make sure it is created correctly and able to be run by using npm run dev, fix any issues you encounter if possible.
+Then confirm builder-day-app is a git repository with an initial commit —
+create-next-app normally sets that up. If it didn't, run git init inside
+builder-day-app and make the first commit.
 ```
 
-**✅ You'll know it worked when:** a new `builder-day-app` folder shows up, and Claude confirms the app was created inside it.
+**✅ You'll know it worked when:** a new `builder-day-app` folder shows up, and Claude confirms the app was created inside it and git is tracking it — every change from here on gets a save point you can look back at or return to.
 
 > The flags in that command answer the setup questions in advance (TypeScript ✅, ESLint ✅, Tailwind ✅, App Router ✅) — that's why nobody gets quizzed, Claude included.
 
@@ -158,6 +161,14 @@ Then move into the new folder
 
 ```bash
 cd builder-day-app
+```
+
+`create-next-app` initializes a git repository with an initial commit for you — `git log` shows it. If it's missing (e.g. git wasn't installed yet when you ran the command):
+
+```bash
+git init
+git add -A
+git commit -m "Initial commit from create-next-app"
 ```
 
 </details>
@@ -384,6 +395,43 @@ export default async function Home() {
 
 ---
 
+## Step 8 — 🤖 Commit your work
+
+The class app is done — put it in the history books. Git commits are the save points the rest of the day builds on: every future change gets reviewed against this known-good state, and you can always come back to it.
+
+**📋 Paste this into Claude Code:**
+
+```text
+Commit all the changes in builder-day-app, grouping the commits by
+feature with a concise message for each commit.
+
+- Run git status first and walk me through what you're about to commit.
+- Confirm .env stays untracked — it holds my secret key and is
+  gitignored; every value in a commit becomes part of history.
+```
+
+**✅ You'll know it worked when:** `git log` reads like a short story of what you built (a few commits with clear messages), and `git status` is clean.
+
+<details>
+<summary><strong>Prefer to do it yourself?</strong> The commands, by hand</summary>
+
+From inside `builder-day-app`, stage and commit one feature at a time — `git add` picks the files, `git commit -m` labels the save point:
+
+```bash
+git status
+git add supabase/
+git commit -m "Add ideas table migration"
+git add lib/supabase.ts app/page.tsx
+git commit -m "Connect app to Supabase and render ideas list"
+git status
+```
+
+The final `git status` should say the working tree is clean — and `.env` should never appear in anything you stage.
+
+</details>
+
+---
+
 # Part 2 — Build your own app
 
 The class app proved the loop: describe → review → verify. Now you point that loop at your own idea, with three reusable prompts — one to shape the idea, one to plan it, one to build it.
@@ -392,7 +440,7 @@ The class app proved the loop: describe → review → verify. Now you point tha
 
 **The real skill in Part 2 is scope management.** Bring an ambitious idea — the workshop and planning prompts exist to carve a *version 1* out of it that you can watch working today, with everything else parked on a "later" list, not thrown away. For most ideas the fastest version 1 is a single-user tool — something for *you*, no sign-up — and it's already secure that way, because the database only talks to your backend (that's what the RLS work bought you). Multi-user accounts make a great later phase: the **Auth** stretch goal below is the door.
 
-## Step 8 — 🤖 Workshop the idea (Claude interviews you)
+## Step 9 — 🤖 Workshop the idea (Claude interviews you)
 
 Don't start by writing a spec — let Claude interview you into one.
 
@@ -430,7 +478,7 @@ Stuck for an idea? Steal one of these — each is a proven one-afternoon build:
 
 **✅ You'll know it worked when:** `IDEA.md` exists and describes something you'd actually use.
 
-## Step 9 — 🤖 Turn the idea into a phased plan
+## Step 10 — 🤖 Turn the idea into a phased plan
 
 **📋 Paste this into Claude Code:**
 
@@ -454,7 +502,7 @@ Read the plan the way you read migrations — this is your review-before-apply m
 
 **✅ You'll know it worked when:** `PLAN.md` exists and phase 1 is something you could imagine finished within the hour.
 
-## Step 10 — 🤖 Build it, one phase at a time
+## Step 11 — 🤖 Build it, one phase at a time
 
 **📋 Paste this into Claude Code:**
 

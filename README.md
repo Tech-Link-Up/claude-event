@@ -8,3 +8,7 @@ A hands-on workshop where you build a fullstack app from scratch — Next.js fro
 - **[AGENTS.md](AGENTS.md)** — the standing rules Claude Code follows in this project: database changes through migration files, Row Level Security on every table, secrets kept server-side, and the frontend/routing conventions to build with.
 - **[.env.example](.env.example)** — the template for your Supabase environment variables (filled in during Step 3 of the guide).
 - **CLAUDE.md** — points Claude Code at AGENTS.md so the rules load automatically in every session.
+
+## Ready to start?
+
+👉 **[Open the class guide](https://github.com/Tech-Link-Up/claude-event/blob/main/CLASS-GUIDE.md)** — everything begins at Step 0.
