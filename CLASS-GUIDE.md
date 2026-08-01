@@ -182,7 +182,7 @@ Open **http://localhost:3000** in your browser. You should see the Next.js welco
 
 ## Step 4 (Optional to understand SQL) — Create a table by hand, once
 
-This is the only time in this class you'll run SQL by hand — Step 5 automates every future schema change. It's optional, but recommended: seeing what a table and a query look like makes everything after less magical. (If you skip it, Step 5 creates this table for you.)
+This is the only time in this class you'll run SQL by hand — Step 6 automates every future schema change, once Step 5 gets Claude connected to your project. It's optional, but recommended: seeing what a table and a query look like makes everything after less magical. (If you skip it, Step 6 creates this table for you.)
 
 In the Supabase dashboard, open the **SQL Editor** (left sidebar) and run:
 - RLS ON with no policies means the public Data API is locked — anyone with the publishable key gets nothing. This is what we want.
@@ -213,7 +213,41 @@ If a **"Potential issue detected"** popup asks about Row Level Security, click *
 
 ---
 
-## Step 5 — Hand the schema to Claude (your first reusable prompt)
+## Step 5 — Connect the Supabase CLI (a reusable prompt)
+
+Before Claude can manage your schema through migrations, it needs the Supabase CLI talking to your actual project — a one-time setup. Same shape as every reusable prompt in this guide: check what's already done, automate what's automatable, hand back the two things only you can do.
+
+**📋 Paste this into Claude Code from inside `builder-day-app`:**
+
+```text
+Set up the Supabase CLI for this project. Check what's already done and
+skip anything that's finished:
+
+1. If there's no supabase/ folder, run: npx supabase init
+2. Check I'm logged in by running: npx supabase projects list
+   If that fails, tell me to run npx supabase login in my own terminal
+   (it opens a browser) and wait for me to confirm.
+3. Check this folder is linked to my project by running:
+   npx supabase migration list
+   If it fails with a "not linked" error, tell me to run npx supabase
+   link in my own terminal, from inside builder-day-app — I'll pick my
+   project from the list and enter the database password I saved in
+   Step 3. Warn me this must run from inside builder-day-app, not a
+   parent folder: running it elsewhere still prints "Finished supabase
+   link" but silently links the wrong folder instead.
+4. Once both checks pass, tell me I'm ready for Step 6.
+```
+
+Two one-time moments where Claude hands control back to you:
+
+- **`npx supabase login`** — run it in your own terminal; it opens a browser to authorize the CLI.
+- **`npx supabase link`** — run it from inside `builder-day-app` (the folder with `supabase/migrations/`), then pick your project from the list and enter the **database password** you saved in Step 3. Running it from the wrong folder still prints "Finished supabase link" — but links that folder instead, and `builder-day-app` stays unlinked.
+
+**✅ You'll know it worked when:** Claude confirms both `npx supabase projects list` and `npx supabase migration list` run without errors.
+
+---
+
+## Step 6 — Hand the schema to Claude (your first migration)
 
 From here on, nobody types schema changes into a dashboard. A **migration** is a SQL file that lives in your repo: you review it before it runs, git keeps its history, and the Supabase CLI tracks which ones have been applied so each runs exactly once. Reviewable, versioned, tracked — that combination is what makes AI-driven database changes safe.
 
@@ -223,38 +257,23 @@ Paste this into Claude Code from inside your app folder. The schema change is de
 Schema change I want: create an "ideas" table with id, title, and
 created_at, seeded with 3 fun example app ideas.
 
-Make this change with the Supabase CLI and migration files. Check what's
-already set up and skip anything that's done:
+Make this change with the Supabase CLI and migration files:
 
-1. If there's no supabase/ folder, run: npx supabase init
-2. Check I'm logged in by running: npx supabase projects list
-   If that fails, tell me to run npx supabase login in my own terminal
-   (it opens a browser) and wait for me to confirm.
-3. Check this folder is linked to my project (npx supabase migration list
-   only works when linked). If not, tell me to run npx supabase link in my
-   own terminal — I'll pick my project and enter the database password I
-   saved when I created it.
-4. Make the schema change following these rules:
-   - Every change is a new file created with
-     npx supabase migration new <short_description>
-     Never edit a migration that has already been pushed — write a new one.
-   - Every new table gets Row Level Security enabled with NO policies:
-     only our backend, using the secret key, can touch the data.
-     (My Supabase project may auto-enable RLS on new tables — write the
-     enable statement in the migration anyway; enabling twice is harmless.)
-   - Write migrations that are safe even if part of the change was already
-     done by hand: create table if not exists, and guard seed inserts so
-     they only run when the table is empty.
-   - Show me the migration file and WAIT for my approval before running
-     npx supabase db push.
+1. Every change is a new file created with
+   npx supabase migration new <short_description>
+   Never edit a migration that has already been pushed — write a new one.
+2. Every new table gets Row Level Security enabled with NO policies:
+   only our backend, using the secret key, can touch the data.
+   (My Supabase project may auto-enable RLS on new tables — write the
+   enable statement in the migration anyway; enabling twice is harmless.)
+3. Write migrations that are safe even if part of the change was already
+   done by hand: create table if not exists, and guard seed inserts so
+   they only run when the table is empty.
+4. Show me the migration file and WAIT for my approval before running
+   npx supabase db push.
 5. After pushing, verify the change is live, then remind me to commit the
    migration file to git.
 ```
-
-Two one-time moments where Claude hands control back to you:
-
-- **`npx supabase login`** — run it in your own terminal; it opens a browser to authorize the CLI.
-- **`npx supabase link`** — run it from inside `builder-day-app` (the folder with `supabase/migrations/`), then pick your project from the list and enter the **database password** you saved in Step 3. Running it from the wrong folder still prints "Finished supabase link" — but links that folder instead, and `builder-day-app` stays unlinked.
 
 The rules baked into that prompt are the takeaway, and they're worth keeping for life:
 
@@ -266,9 +285,9 @@ The rules baked into that prompt are the takeaway, and they're worth keeping for
 
 ---
 
-## Step 6 — Connect the app to Supabase (another reusable prompt)
+## Step 7 — Connect the app to Supabase (another reusable prompt)
 
-Everything left is app code. Paste this prompt into Claude Code — same shape as Step 5: check state first, automate what's automatable, hand the manual steps back to the human:
+Everything left is app code. Paste this prompt into Claude Code — same shape as Step 6: check state first, automate what's automatable, hand the manual steps back to the human:
 
 ```text
 I'm in a Next.js app. Connect it to my Supabase database with ALL database
@@ -356,7 +375,7 @@ The class app proved the loop: describe → review → verify. Now you point tha
 
 **The real skill in Part 2 is scope management.** Bring an ambitious idea — the workshop and planning prompts exist to carve a *version 1* out of it that you can watch working today, with everything else parked on a "later" list, not thrown away. For most ideas the fastest version 1 is a single-user tool — something for *you*, no sign-up — and it's already secure that way, because the database only talks to your backend (that's what the RLS work bought you). Multi-user accounts make a great later phase: the **Auth** stretch goal below is the door.
 
-## Step 7 — 🤖 Workshop the idea (Claude interviews you)
+## Step 8 — 🤖 Workshop the idea (Claude interviews you)
 
 Don't start by writing a spec — let Claude interview you into one.
 
@@ -394,7 +413,7 @@ Stuck for an idea? Steal one of these — each is a proven one-afternoon build:
 
 **✅ You'll know it worked when:** `IDEA.md` exists and describes something you'd actually use.
 
-## Step 8 — 🤖 Turn the idea into a phased plan
+## Step 9 — 🤖 Turn the idea into a phased plan
 
 **📋 Paste this into Claude Code:**
 
@@ -406,7 +425,7 @@ Read IDEA.md and turn it into a build plan, saved as PLAN.md.
 - Every phase ends with something visible I can check myself.
 - For each phase list: what we build, any schema changes, and how I
   verify it in the browser.
-- All schema changes go through my migration workflow (the Step 5
+- All schema changes go through my migration workflow (the Step 6
   prompt): new migration file, RLS on with no policies, show me the SQL
   and wait for approval before pushing.
 - Carry IDEA.md's Later list into the plan, so deferred ideas stay
@@ -418,7 +437,7 @@ Read the plan the way you read migrations — this is your review-before-apply m
 
 **✅ You'll know it worked when:** `PLAN.md` exists and phase 1 is something you could imagine finished within the hour.
 
-## Step 9 — 🤖 Build it, one phase at a time
+## Step 10 — 🤖 Build it, one phase at a time
 
 **📋 Paste this into Claude Code:**
 
@@ -426,7 +445,7 @@ Read the plan the way you read migrations — this is your review-before-apply m
 Read PLAN.md and build PHASE 1 ONLY.
 
 - If the phase needs schema changes, make them with my migration
-  workflow (the Step 5 prompt rules) before writing app code.
+  workflow (the Step 6 prompt rules) before writing app code.
 - Same rules as the class app: all database access on the server, the
   secret key never reaches the browser.
 - When the phase works, tell me exactly how to verify it in my browser,
@@ -451,7 +470,7 @@ When phase 1 checks out in your browser, the rest of the day is one sentence at 
 
 Your first move is always the same: paste the exact error (or describe what you expected vs. what happened) into Claude Code and say which step you're on — most problems here are a one-line fix, and Claude is sitting in your project with full context. In the workshop room, the instructor is your second opinion.
 
-There's also a safety net: the finished app lives in this repo under `builder-day-app/` (its README explains how to run it). It's the exact code this guide builds, so you can compare your files against it or continue from it at any point — you'll still need your own Supabase project and `.env` file (Step 3), and the Step 5 prompt can then rebuild the schema from the repo's migration files.
+There's also a safety net: the finished app lives in this repo under `builder-day-app/` (its README explains how to run it). It's the exact code this guide builds, so you can compare your files against it or continue from it at any point — you'll still need your own Supabase project and `.env` file (Step 3) and the CLI connected (Step 5), and the Step 6 prompt can then rebuild the schema from the repo's migration files.
 
 ## Troubleshooting
 
