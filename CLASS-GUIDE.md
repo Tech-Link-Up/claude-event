@@ -389,6 +389,8 @@ Stuck for an idea? Steal one of these — each is a proven one-afternoon build:
 | **Coffee journal** | Log each cup — beans, brew method, rating — and find your favorites |
 | **Bill splitter** | Log who paid what on a trip, see who owes whom |
 | **Reading list** | Books and articles with a status, a rating, and a one-line takeaway |
+| **Meeting transcriber** | Upload a recording, get a transcript and an AI summary — never take meeting notes by hand again |
+| **Job application tracker** | Paste a job posting, AI extracts the role and deadline, and you track status through applied → interview → offer/reject |
 
 **✅ You'll know it worked when:** `IDEA.md` exists and describes something you'd actually use.
 
