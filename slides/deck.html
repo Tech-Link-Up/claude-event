@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Claude Code for Beginners — Orange County</title>
+<style>
+@font-face{font-family:Copernicus;src:url("assets/Copernicus-Medium.woff2") format("woff2");font-weight:500;font-display:block}
+
+:root{
+  --clay:#D97757; --pressed:#BC5F41; --ink:#141413; --slate:#57564F;
+  --mute:#8C8A80; --rule:#E5E5E3; --white:#FFFFFF; --cream:#F0EEE6;
+  --disp:Copernicus,"Iowan Old Style",Georgia,serif;
+  --sans:"Helvetica Neue",Inter,-apple-system,"Segoe UI",Arial,sans-serif;
+  --mono:ui-monospace,Menlo,Consolas,monospace;
+  --pad:96px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#0a0a09;overflow:hidden;font-family:var(--sans)}
+
+#stage{position:fixed;inset:0;display:grid;place-items:center}
+#canvas{width:1480px;height:980px;position:relative;transform-origin:center center;
+  background:var(--white);overflow:hidden}
+.s{position:absolute;inset:0;display:none;background:var(--white);padding:var(--pad)}
+.s.on{display:block}
+.s.clay{background:var(--clay)}
+.s.cream{background:var(--cream)}
+.s.dark{background:var(--ink)}
+
+/* ---- type ------------------------------------------------------------- */
+h1{font-family:var(--disp);font-weight:500;font-size:76px;line-height:1.06;
+   letter-spacing:-.022em;color:var(--ink);max-width:22ch}
+h1 em{font-style:normal;color:var(--clay)}
+h2{font-family:var(--disp);font-weight:500;font-size:54px;line-height:1.1;
+   letter-spacing:-.02em;color:var(--ink)}
+.eyebrow{font-family:var(--sans);font-weight:700;font-size:15px;letter-spacing:.22em;
+   text-transform:uppercase;color:var(--clay)}
+.body{font-family:var(--disp);font-size:31px;line-height:1.45;color:var(--slate);max-width:34ch}
+.small{font-family:var(--sans);font-size:21px;line-height:1.55;color:var(--slate)}
+.cue{font-family:var(--sans);font-size:19px;color:var(--mute);font-style:italic}
+.white h1,.white h2,.white .body{color:var(--white)}
+
+/* ---- layout helpers --------------------------------------------------- */
+.stack{position:absolute;left:var(--pad);right:var(--pad);top:var(--pad)}
+.bottom{position:absolute;left:var(--pad);right:var(--pad);bottom:var(--pad)}
+.center{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.split{position:absolute;left:var(--pad);right:var(--pad);top:50%;transform:translateY(-50%);
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:52px;align-items:start}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:40px;align-items:start}
+.fig{width:100%;display:block}
+.hr{height:1px;background:var(--rule);margin:34px 0}
+
+/* ---- slide 00 · Claude OC banner (Santa Barbara pattern) --------------- */
+.banner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-start;padding-top:112px}
+.wordmark{display:flex;align-items:center;gap:20px}
+.wordmark img{width:80px;height:80px;filter:brightness(0) invert(1)}
+.wordmark span{font-family:var(--disp);font-size:80px;color:var(--ink);letter-spacing:-.02em}
+.cityname{font-family:var(--disp);font-size:122px;color:var(--white);letter-spacing:-.03em;
+  margin-top:18px;line-height:1}
+.globe{width:660px;display:block;margin-top:34px;flex:none}
+.qr00{position:absolute;right:var(--pad);bottom:var(--pad);z-index:4;text-align:center}
+.qr00 img{width:220px;display:block;border-radius:10px}
+.qr00 .l{font-family:var(--sans);font-weight:700;font-size:15px;letter-spacing:.2em;
+  text-transform:uppercase;color:#fff;margin-top:14px}
+.qr00 .u{font-family:var(--sans);font-size:14px;color:rgba(255,255,255,.85);margin-top:6px}
+.vidwrap{position:absolute;inset:0;background:#000;display:grid;place-items:center}
+.vidwrap video{width:100%;height:100%;object-fit:contain;display:block}
+
+/* ---- holding cards ---------------------------------------------------- */
+.cards{display:grid;grid-template-columns:1fr 1.35fr;gap:32px}
+.card{border:1.5px solid var(--rule);background:var(--white);padding:38px 40px;
+  display:flex;align-items:center;gap:32px;min-height:250px}
+.card h3{font-family:var(--sans);font-weight:700;font-size:13px;letter-spacing:.2em;
+  color:var(--clay);text-transform:uppercase;margin-bottom:18px}
+.card .lg{font-family:var(--disp);font-size:38px;line-height:1.2;color:var(--ink)}
+.card .sm{font-family:var(--sans);font-size:17px;color:var(--mute);margin-top:12px}
+.card img.qr{width:230px;height:230px;flex:none}
+.blank{display:inline-block;min-width:270px;border-bottom:3px dashed var(--clay);height:44px}
+
+
+.wifi{margin-bottom:20px}
+.wifi .k{display:block;font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.wifi .v{display:block;font-family:var(--disp);font-size:40px;line-height:1.1;color:var(--ink)}
+
+/* ---- timeline --------------------------------------------------------- */
+.tl{position:relative;margin-top:70px;padding-top:40px}
+.tl .line{position:absolute;top:40px;left:0;right:0;height:2px;background:var(--ink)}
+.tl .nodes{display:flex;justify-content:space-between;position:relative}
+.tl .n{text-align:center;flex:1}
+.tl .dot{width:19px;height:19px;border-radius:50%;background:var(--ink);margin:-49px auto 26px}
+.tl .n.hi .dot{background:var(--clay);width:27px;height:27px;margin:-53px auto 22px}
+.tl .t{font-family:var(--disp);font-size:34px;color:var(--ink)}
+.tl .l{font-family:var(--sans);font-size:17px;color:var(--slate);margin-top:9px;line-height:1.4}
+.tl .n.hi .t{color:var(--clay)}
+
+/* ---- badge wall (LA pattern) ------------------------------------------ */
+.wall{display:grid;grid-template-columns:repeat(4,1fr);gap:52px;margin-top:56px}
+.bcard img{width:100%;border-radius:14px;display:block}
+.bcard.me img{outline:5px solid var(--ink);outline-offset:-2px;border-radius:14px}
+.bcard p{font-family:var(--disp);font-size:26px;line-height:1.25;margin-top:22px;color:var(--ink)}
+.bcard.me p{color:var(--clay)}
+
+/* ---- stats ------------------------------------------------------------ */
+.stats{display:flex;gap:110px;margin-top:52px}
+.stat .n{font-family:var(--disp);font-size:130px;line-height:.9;color:var(--ink);letter-spacing:-.03em}
+.stat .l{font-family:var(--sans);font-weight:700;font-size:15px;letter-spacing:.2em;
+  color:var(--mute);margin-top:14px;text-transform:uppercase}
+
+/* ---- bio -------------------------------------------------------------- */
+.bio{display:flex;gap:64px;align-items:center}
+.bio img.p{width:240px;height:240px;border-radius:50%;flex:none;object-fit:cover}
+.bio ul{list-style:none}
+.bio li{font-family:var(--disp);font-size:30px;line-height:1.5;padding-left:38px;position:relative;
+  color:var(--ink);margin-bottom:16px}
+.bio li::before{content:"";position:absolute;left:0;top:.66em;width:20px;height:2.5px;background:var(--clay)}
+
+/* ---- spectrum --------------------------------------------------------- */
+.spec{margin:74px 0 20px;position:relative}
+.spec .bar{height:2.5px;background:var(--ink);position:relative}
+.spec .d{position:absolute;width:17px;height:17px;border-radius:50%;background:var(--ink);top:-7px}
+.spec .d.c{background:var(--clay);width:23px;height:23px;top:-10px}
+.spec .ends{display:flex;justify-content:space-between;margin-top:30px;
+  font-family:var(--sans);font-weight:700;font-size:15px;letter-spacing:.2em;color:var(--mute)}
+
+/* ---- modes / model / effort ------------------------------------------- */
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;margin-top:56px}
+.mode{border:2px solid var(--ink);padding:34px 32px;min-height:230px}
+.mode.hi{background:var(--clay);border-color:var(--clay)}
+.mode .k{font-family:var(--disp);font-size:42px;color:var(--ink);margin-bottom:16px}
+.mode.hi .k,.mode.hi .v,.mode.hi .tag{color:var(--white)}
+.mode .v{font-family:var(--sans);font-size:20px;line-height:1.5;color:var(--slate)}
+.mode .tag{font-family:var(--sans);font-weight:700;font-size:13px;letter-spacing:.16em;
+  color:var(--clay);margin-top:18px;text-transform:uppercase}
+.scale{display:flex;align-items:flex-end;gap:0;margin-top:50px}
+.scale .step{flex:1;text-align:center;padding:0 8px}
+.scale .bar{background:var(--clay);margin:0 auto 20px;width:70%}
+.scale .nm{font-family:var(--disp);font-size:27px;color:var(--ink)}
+.scale .ds{font-family:var(--sans);font-size:15px;color:var(--mute);margin-top:8px;line-height:1.4}
+.scale .step.hi .nm{color:var(--clay);font-weight:600}
+
+/* ---- terminal --------------------------------------------------------- */
+.term{background:var(--ink);color:#EDE9DF;font-family:var(--mono);font-size:29px;
+  line-height:1.8;padding:46px 52px;border-radius:10px}
+.term .p{color:var(--clay)}
+.term .c{color:#8C8A80}
+.shot{width:100%;border:1.5px solid var(--rule);border-radius:10px;display:block}
+
+/* ---- warning cards ---------------------------------------------------- */
+.warns{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:44px}
+.warn{border:2px solid var(--ink);padding:32px 34px}
+.warn h4{font-family:var(--sans);font-weight:700;font-size:14px;letter-spacing:.18em;
+  color:var(--clay);text-transform:uppercase;margin-bottom:16px}
+.warn p{font-family:var(--disp);font-size:25px;line-height:1.4;color:var(--ink)}
+
+/* ---- misc ------------------------------------------------------------- */
+.big{font-family:var(--disp);font-size:250px;color:var(--clay);line-height:1;letter-spacing:-.04em}
+.fork{display:grid;grid-template-columns:1fr 1fr;gap:44px;margin-top:60px}
+.fork .o{border-left:5px solid var(--clay);padding-left:32px}
+.fork .o .k{font-family:var(--sans);font-weight:700;font-size:14px;letter-spacing:.2em;color:var(--clay)}
+.fork .o .v{font-family:var(--disp);font-size:38px;line-height:1.2;margin-top:14px;color:var(--ink)}
+.photo{width:100%;height:420px;object-fit:cover;display:block;border-radius:10px}
+.links{display:flex;gap:80px;margin-top:44px}
+.link{display:flex;gap:22px;align-items:center}
+.link img{width:178px;height:178px}
+.link .t{font-family:var(--disp);font-size:29px;color:var(--ink)}
+.link .sub{font-family:var(--sans);font-size:17px;color:var(--mute);margin-top:7px}
+.progs{display:grid;grid-template-columns:repeat(4,1fr);gap:36px;margin-top:64px}
+.prog{border-top:4px solid var(--clay);padding-top:26px}
+.prog .n{font-family:var(--disp);font-size:33px;line-height:1.15;color:var(--ink)}
+
+
+/* ---- claude conversations photo row ----------------------------------- */
+.ccrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:40px}
+.ccrow img{width:100%;height:330px;object-fit:cover;display:block;border-radius:8px}
+.cccap{font-family:var(--sans);font-weight:700;font-size:13px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--mute);margin-top:18px}
+/* ---- next-up dated callout -------------------------------------------- */
+.nextup{display:flex;gap:34px;align-items:center;margin-top:46px;
+  border:2px solid var(--clay);padding:30px 34px}
+.nx-date{background:var(--clay);color:#fff;padding:18px 26px;text-align:center;flex:none}
+.nx-date .d{font-family:var(--disp);font-size:60px;line-height:1;display:block}
+.nx-date .m{font-family:var(--sans);font-weight:700;font-size:15px;letter-spacing:.22em;display:block;margin-top:6px}
+.nx-t{font-family:var(--disp);font-size:44px;line-height:1.1;color:var(--ink)}
+.nx-s{font-family:var(--sans);font-size:20px;line-height:1.5;color:var(--slate);margin-top:12px;max-width:52ch}
+
+
+/* ---- resources board --------------------------------------------------- */
+.resgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:44px 34px;margin-top:56px}
+.res{text-align:left}
+.res img{width:186px;height:186px;display:block;border:1px solid var(--rule);border-radius:6px}
+.res .rt{font-family:var(--disp);font-size:27px;line-height:1.15;color:var(--ink);margin-top:14px}
+.res .ru{font-family:var(--sans);font-size:13px;color:var(--mute);margin-top:5px;line-height:1.35;
+  word-break:break-all}
+.res .rk{font-family:var(--sans);font-weight:700;font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--clay);margin-top:7px}
+
+
+/* ---- today vs production contrast -------------------------------------- */
+.contrast{display:grid;grid-template-columns:1fr 1.5fr;gap:44px;margin-top:34px;align-items:start}
+.contrast .side{display:flex;flex-direction:column}
+.sidehead{font-family:var(--sans);font-weight:700;font-size:13px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--mute);border-bottom:2px solid var(--rule);
+  padding-bottom:10px;margin-bottom:18px}
+.sidehead.alt{color:var(--clay);border-bottom-color:var(--clay)}
+.contrast img{width:100%;display:block;object-fit:contain;max-height:430px}
+.threecap{display:flex;gap:22px;margin-top:16px;flex-wrap:wrap}
+.threecap span{font-family:var(--sans);font-size:15px;color:var(--slate);line-height:1.4}
+.threecap b{font-family:var(--disp);font-size:19px;color:var(--ink);display:block}
+
+/* ---- presenter chrome ------------------------------------------------- */
+#bar{position:fixed;left:0;right:0;bottom:0;height:34px;background:#0a0a09;
+  display:flex;align-items:center;justify-content:space-between;padding:0 18px;
+  font-family:var(--mono);font-size:12px;color:#55534d;letter-spacing:.1em}
+#bar.hide{display:none}
+</style>
+</head>
+<body>
+<div id="stage"><div id="canvas">
+
+<!-- 00 ─ CLAUDE OC ─ matches the cold-open's final frame -->
+<section class="s clay on" data-sec="DOORS">
+  <div class="banner">
+    <div class="wordmark"><img src="assets/Claude-Spark-Logo.svg" alt=""><span>Claude</span></div>
+    <div class="cityname">Orange County</div>
+    <img class="globe" src="assets/globe-oc.png" alt="">
+  </div>
+  <div class="qr00">
+    <img src="assets/qr-guide.png" alt="">
+    <div class="l">Start here</div>
+    <div class="u">github.com/Tech-Link-Up/claude-event</div>
+  </div>
+</section>
+
+<!-- 01 ─ HOLDING -->
+<section class="s" data-sec="DOORS">
+  <div class="stack">
+    <div class="eyebrow">Claude Community · Orange County</div>
+    <h1 style="margin-top:22px">Claude Code<br>for Beginners</h1>
+    <div class="small" style="margin-top:24px">Saturday, August 1 · 1:00–5:00 PM · The Ticket 500</div>
+  </div>
+  <div class="bottom">
+    <div class="cards">
+      <div class="card"><div>
+        <h3>Wifi</h3>
+        <div class="wifi"><span class="k">Network</span><span class="v">Ticket 500 guest</span></div>
+        <div class="wifi"><span class="k">Password</span><span class="v">500guest</span></div>
+      </div></div>
+      <div class="card">
+        <div>
+          <h3>Start here — before we begin</h3>
+          <div class="lg" style="font-size:32px;white-space:nowrap">github.com/Tech-Link-Up<br>/claude-event</div>
+          <div class="sm">The class guide — setup starts here</div>
+        </div>
+        <img class="qr" src="assets/qr-guide.png" alt="">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 ─ COLD OPEN VIDEO -->
+<section class="s dark" data-sec="COLD OPEN">
+  <div class="vidwrap">
+    <video src="video/cold-open.mp4" controls playsinline preload="auto"
+      onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"
+      onpointerdown="event.stopPropagation()"></video>
+  </div>
+</section>
+
+<!-- 03 ─ AGENDA -->
+<section class="s" data-sec="WELCOME">
+  <div class="stack">
+    <h1>Here's the shape of <em>the afternoon</em>.</h1>
+    <div class="tl">
+      <div class="line"></div>
+      <div class="nodes">
+        <div class="n hi"><div class="dot"></div><div class="t">1:00</div><div class="l">Welcome</div></div>
+        <div class="n"><div class="dot"></div><div class="t">1:20</div><div class="l">How a full stack<br>app works</div></div>
+        <div class="n"><div class="dot"></div><div class="t">1:45</div><div class="l">Set up<br>with Danny</div></div>
+        <div class="n"><div class="dot"></div><div class="t">2:30</div><div class="l">Build<br>your app</div></div>
+        <div class="n"><div class="dot"></div><div class="t">4:30</div><div class="l">Show<br>and tell</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom"><div class="body">Two hours of build time. That's the point of the day.</div></div>
+</section>
+
+<!-- 03 ─ GLOBAL ─ LA badge-wall pattern -->
+<section class="s" data-sec="WELCOME">
+  <div class="stack">
+    <h1>You just walked into <em>something global</em>.</h1>
+    <div class="wall">
+      <div class="bcard"><img src="assets/losangeles.png" alt=""><p>Los Angeles</p></div>
+      <div class="bcard"><img src="assets/atlanta.png" alt=""><p>Atlanta</p></div>
+      <div class="bcard"><img src="assets/sandiego.png" alt=""><p>San Diego</p></div>
+      <div class="bcard"><img src="assets/bhopal.svg" alt=""><p>Bhopal</p></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between">
+      <div class="stats" style="margin:0">
+        <div class="stat"><div class="n">33</div><div class="l">Countries</div></div>
+        <div class="stat"><div class="n">67</div><div class="l">Cities</div></div>
+      </div>
+      <div class="small" style="max-width:30ch;text-align:right">Meetups, workshops and hackathons,
+        run by local builders. Today Orange County is one of them.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 ─ CLAUDE OC -->
+<section class="s" data-sec="WELCOME">
+  <div class="stack">
+    <h1 style="font-size:64px">This doesn't stop at <em>5 o'clock</em>.</h1>
+    <div class="ccrow">
+      <img src="assets/cc-arrivals.jpg" alt="">
+      <img src="assets/cc-table.jpg" alt="">
+      <img src="assets/cc-badges.jpg" alt="">
+    </div>
+    <div class="cccap">Claude Conversation · Los Angeles · last month</div>
+  </div>
+  <div class="bottom">
+    <div class="links">
+      <div class="link"><img src="assets/qr-claudeoc.png" alt="">
+        <div><div class="t">claudeoc.com</div><div class="sub">Every event we run</div></div></div>
+      <div class="link"><img src="assets/qr-whatsapp.png" alt="">
+        <div><div class="t">WhatsApp</div><div class="sub">Where it actually lives</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 ─ WHO I AM -->
+<section class="s" data-sec="WELCOME">
+  <div class="stack"><h1>I'm <em>Travis</em>.</h1></div>
+  <div style="position:absolute;left:var(--pad);right:var(--pad);top:290px">
+    <div class="bio">
+      <img class="p" src="assets/travis.png" alt="">
+      <ul>
+        <li>Anthropic Claude Ambassador, Orange County</li>
+        <li>Ten years a product leader — e-commerce and tech</li>
+        <li>Co-founder, AuraPath AI — we help organizations learn AI,
+            and build the solutions with them</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bottom"><div class="small">linkedin.com/in/travcjohnson</div></div>
+</section>
+
+<!-- 06 ─ TECH LINK UP -->
+<section class="s" data-sec="WELCOME">
+  <div class="stack"><h1>Today exists because of</h1></div>
+  <div class="center"><img src="assets/techlinkup.png" style="width:520px" alt=""></div>
+  <div class="bottom">
+    <div class="body">They came to us wanting to build this together.
+      Want to run something with this community? Find me.</div>
+    <div class="cue" style="margin-top:20px">« raise your hand if you came from Tech Link Up »</div>
+  </div>
+</section>
+
+<!-- 07 ─ WHO'S IN THIS ROOM -->
+<section class="s" data-sec="WELCOME">
+  <div class="split">
+    <div>
+      <h1>Before we start — <em>who's here?</em></h1>
+      <div class="body" style="margin-top:44px;font-size:34px;line-height:1.6">
+        You write code for a living.<br>
+        You're not technical at all.<br>
+        You've never opened a terminal.
+      </div>
+    </div>
+    <div><img class="fig" src="assets/img-07.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 08 ─ THE SPECTRUM -->
+<section class="s" data-sec="WELCOME">
+  <div class="stack">
+    <h1>Some of you will feel lost. Some will feel <em>ahead</em>.</h1>
+    <div class="spec">
+      <div class="bar">
+        <div class="d" style="left:6%"></div><div class="d" style="left:17%"></div>
+        <div class="d" style="left:26%"></div><div class="d c" style="left:38%"></div>
+        <div class="d" style="left:47%"></div><div class="d" style="left:58%"></div>
+        <div class="d" style="left:69%"></div><div class="d" style="left:79%"></div>
+        <div class="d" style="left:91%"></div>
+      </div>
+      <div class="ends"><span>Lost</span><span>Ahead</span></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="body" style="max-width:46ch">Both are normal. Neither lasts.<br>
+      Ahead? Help the person next to you.<br>
+      Behind? Say so out loud — that's what today is.</div>
+  </div>
+</section>
+
+<!-- 09 ─ WHY THIS MATTERS -->
+<section class="s cream" data-sec="WELCOME">
+  <div class="split">
+    <div><h1 style="font-size:88px">This is not <em>about apps</em>.</h1></div>
+    <div><img class="fig" src="assets/img-09.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 10 ─ TODAY'S GOAL -->
+<section class="s" data-sec="WELCOME">
+  <div class="stack">
+    <h1>By 5 o'clock you will have built a <em>full stack app</em>.</h1>
+    <div class="row3" style="margin-top:76px">
+      <div><div class="eyebrow">You can see it</div>
+        <div class="body" style="margin-top:16px;font-size:29px">A real page in a browser.</div></div>
+      <div><div class="eyebrow">It remembers</div>
+        <div class="body" style="margin-top:16px;font-size:29px">A database behind it that you made today.</div></div>
+      <div><div class="eyebrow">It has an address</div>
+        <div class="body" style="margin-top:16px;font-size:29px">Live on the internet. Send it to anyone.</div></div>
+    </div>
+  </div>
+  <div class="bottom"><div class="cue">« not a toy, not a tutorial — a real thing you own »</div></div>
+</section>
+
+<!-- 11 ─ WHAT'S AHEAD -->
+<section class="s" data-sec="WELCOME">
+  <div class="stack">
+    <h1 style="font-size:64px">What we're building <em>next in SoCal</em>.</h1>
+    <div class="nextup">
+      <div class="nx-date"><span class="d">08</span><span class="m">AUG</span></div>
+      <div class="nx-body">
+        <div class="nx-t">Los Angeles &middot; Claude Impact Lab</div>
+        <div class="nx-s">Next Saturday, 10:00&ndash;4:00. One day, real teams,
+          building for organizations that need it.</div>
+      </div>
+    </div>
+    <div class="progs" style="margin-top:44px">
+      <div class="prog"><div class="n">Claude for<br>Cybersecurity</div></div>
+      <div class="prog"><div class="n">Claude for<br>Go-to-Market</div></div>
+      <div class="prog"><div class="n">Claude for<br>Nonprofits</div></div>
+      <div class="prog"><div class="n">More Impact<br>Labs across OC</div></div>
+    </div>
+  </div>
+  <div class="bottom"><div class="cue">&laquo; real estate, anti-trafficking &mdash; tell me what you want &raquo;</div></div>
+</section>
+
+<!-- 13 ─ ANATOMY / CONTRAST -->
+<section class="s" data-sec="PRIMER">
+  <div class="stack">
+    <h1 style="font-size:52px;max-width:none">Every app is three pieces. Real ones just have <em>a lot more of them</em>.</h1>
+    <div class="contrast">
+      <div class="side">
+        <div class="sidehead">What we're building today</div>
+        <img src="assets/img-12-trim.png" alt="">
+        <div class="threecap">
+          <span><b>Face</b> what you see</span>
+          <span><b>Brain</b> what decides</span>
+          <span><b>Memory</b> where it lives</span>
+        </div>
+      </div>
+      <div class="side">
+        <div class="sidehead alt">What production actually looks like</div>
+        <img src="assets/img-arch.png" alt="">
+        <div class="threecap"><span>Same three ideas. More boxes.</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="body" style="max-width:none;font-size:27px">
+      Underneath all of it: <b>logic</b>, <b>data</b>, and <b>a way for people to reach it</b>.
+      We're doing the small honest version — the ideas are the same.</div>
+  </div>
+</section>
+
+<!-- 13 ─ GITHUB -->
+<section class="s" data-sec="PRIMER">
+  <div class="split">
+    <div><img class="fig" src="assets/img-13.png" alt=""></div>
+    <div>
+      <h1 style="font-size:62px">GitHub remembers <em>every version</em> of your work.</h1>
+      <div class="body" style="margin-top:36px">Nothing you do today can be permanently broken.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 ─ SUPABASE -->
+<section class="s" data-sec="PRIMER">
+  <div class="split">
+    <div><img class="fig" src="assets/img-14.png" alt=""></div>
+    <div>
+      <h1 style="font-size:62px">Supabase is <em>the memory</em>.</h1>
+      <div class="body" style="margin-top:36px">A real database, in the cloud, free, in about a minute.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 ─ VERCEL -->
+<section class="s" data-sec="PRIMER">
+  <div class="split">
+    <div><img class="fig" src="assets/img-15.png" alt=""></div>
+    <div>
+      <h1 style="font-size:62px">Vercel puts it <em>on the internet</em>.</h1>
+      <div class="body" style="margin-top:36px">Your app stops living on your laptop and gets an
+        address you can text to your mom.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 ─ THIS IS THE THING -->
+<section class="s" data-sec="CLAUDE CODE">
+  <div class="stack">
+    <h1 style="font-size:60px">This is what you'll be looking at <em>all afternoon</em>.</h1>
+    <img class="shot" src="assets/terminal.jpg" style="margin-top:36px;max-height:560px;object-fit:contain;background:#1c1b19" alt="">
+  </div>
+  <div class="bottom"><div class="body" style="max-width:none">A folder, a conversation, and a text box. That's it.</div></div>
+</section>
+
+<!-- 17 ─ THE THREE MODES -->
+<section class="s" data-sec="CLAUDE CODE">
+  <div class="stack">
+    <h1>How much rope <em>you give it</em>.</h1>
+    <div class="modes">
+      <div class="mode"><div class="k">Plan</div>
+        <div class="v">Reads and thinks. Writes nothing.</div>
+        <div class="tag">Safe to explore</div></div>
+      <div class="mode hi"><div class="k">Approve</div>
+        <div class="v">Asks you before every single change.</div>
+        <div class="tag">You live here today</div></div>
+      <div class="mode"><div class="k">Auto</div>
+        <div class="v">Stops asking. Moves fast.</div>
+        <div class="tag">And you stop watching</div></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="small"><b>shift + tab</b> cycles between them.</div>
+    <div class="cue" style="margin-top:14px">« plan first, approve while you're learning, auto when you trust it — that progression is the skill »</div>
+  </div>
+</section>
+
+<!-- 18 ─ /model -->
+<section class="s" data-sec="CLAUDE CODE">
+  <div class="stack">
+    <h1>Which Claude is <em>doing the work</em>.</h1>
+    <div class="modes">
+      <div class="mode"><div class="k">Fable</div>
+        <div class="v">Fast and cheap. Simple edits.</div></div>
+      <div class="mode hi"><div class="k">Sonnet</div>
+        <div class="v">The workhorse.</div>
+        <div class="tag">Use this today</div></div>
+      <div class="mode"><div class="k">Opus</div>
+        <div class="v">The heavyweight. Save it for hard problems.</div></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="small">Type <b>/model</b> to switch. You can change it mid-conversation.</div>
+    <div class="cue" style="margin-top:14px">« you don't need Opus to rename a button »</div>
+  </div>
+</section>
+
+<!-- 19 ─ /effort -->
+<section class="s" data-sec="CLAUDE CODE">
+  <div class="stack">
+    <h1>How hard it thinks <em>before it acts</em>.</h1>
+    <div class="scale">
+      <div class="step"><div class="bar" style="height:36px"></div><div class="nm">low</div><div class="ds">Quick answers</div></div>
+      <div class="step hi"><div class="bar" style="height:72px"></div><div class="nm">medium</div><div class="ds">Most of today</div></div>
+      <div class="step"><div class="bar" style="height:112px"></div><div class="nm">high</div><div class="ds">Real bugs</div></div>
+      <div class="step"><div class="bar" style="height:152px"></div><div class="nm">xhigh</div><div class="ds">Architecture</div></div>
+      <div class="step"><div class="bar" style="height:196px"></div><div class="nm">max</div><div class="ds">Genuinely stuck</div></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="small">Type <b>/effort</b> to change it.</div>
+    <div class="cue" style="margin-top:14px">« model is who's working. effort is how long they think. both cost tokens — that's the whole tradeoff »</div>
+  </div>
+</section>
+
+<!-- 20 ─ CREDITS -->
+<section class="s" data-sec="SET UP">
+  <div class="stack">
+    <h1 style="font-size:64px">$50 in API credits — <em>first 60</em>.</h1>
+    <div class="warns">
+      <div class="warn"><h4>This is not Claude Code</h4>
+        <p>Credits are for the API, later. Claude Code still needs Pro, $20 a month.</p></div>
+      <div class="warn"><h4>Use the same email</h4>
+        <p>Sign in to console.anthropic.com with the same address as your Claude account,
+           and submit your Org ID.</p></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div style="display:flex;align-items:center;gap:36px">
+      <img src="assets/qr-credits.png" style="width:300px" alt="">
+      <div class="small">One scan, one claim. Wrong ID gets rejected and can't be fixed.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 21 ─ SET UP -->
+<section class="s" data-sec="SET UP">
+  <div class="stack"><h1>Danny Ronson <em>takes it from here</em>.</h1></div>
+  <div class="center" style="top:70px">
+    <div>
+      <img src="assets/qr-guide.png" style="width:400px" alt="">
+      <div class="body" style="margin-top:26px;font-size:28px;text-align:center">the setup guide</div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="body" style="max-width:none">Goal: everyone set up within the hour.<br>
+      TAs are in the room — raise your hand and someone comes.</div>
+  </div>
+</section>
+
+<!-- 22 ─ DONE EARLY -->
+<section class="s" data-sec="SET UP">
+  <div class="stack">
+    <h1>Finished setup? <em>Two jobs</em>.</h1>
+    <div class="fork">
+      <div class="o"><div class="k">One</div><div class="v">Help someone near you who isn't there yet.</div></div>
+      <div class="o"><div class="k">Two</div><div class="v">Start building. Don't wait for us.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 23 ─ GO BUILD -->
+<section class="s clay white" data-sec="BUILD">
+  <div class="center">
+    <div>
+      <h1 style="font-size:86px;max-width:none;text-align:center">Take your idea. Give it to Claude.<br>Make a plan. Build it.</h1>
+      <div class="body" style="margin-top:52px;max-width:none;text-align:center;color:#fff;opacity:.85">
+        Show and tell at 4:30.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 25 ─ RESOURCES -->
+<section class="s" data-sec="RESOURCES">
+  <div class="stack">
+    <h1 style="font-size:60px">Everything, <em>in one place</em>.</h1>
+    <div class="resgrid">
+      <div class="res"><img src="assets/qr-guide.png" alt="">
+        <div class="rt">The class guide</div>
+        <div class="ru">github.com/Tech-Link-Up/claude-event</div>
+        <div class="rk">Every step, all day</div></div>
+
+      <div class="res"><img src="assets/qr-setup.png" alt="">
+        <div class="rt">Setup guide</div>
+        <div class="ru">oc-claude-code-setup.vercel.app</div>
+        <div class="rk">Install + accounts</div></div>
+
+      <div class="res"><img src="assets/qr-credits.png" alt="">
+        <div class="rt">$50 API credits</div>
+        <div class="ru">platform.claude.com/offers</div>
+        <div class="rk">First 60 · Org ID needed</div></div>
+
+      <div class="res"><img src="assets/qr-docs.png" alt="">
+        <div class="rt">Claude Code docs</div>
+        <div class="ru">code.claude.com/docs</div>
+        <div class="rk">The real manual</div></div>
+
+      <div class="res"><img src="assets/qr-pricing.png" alt="">
+        <div class="rt">Claude Pro</div>
+        <div class="ru">claude.com/pricing</div>
+        <div class="rk">$20/mo · needed for Claude Code</div></div>
+
+      <div class="res"><img src="assets/qr-claudeoc.png" alt="">
+        <div class="rt">Claude OC</div>
+        <div class="ru">claudeoc.com</div>
+        <div class="rk">Every event we run</div></div>
+
+      <div class="res"><img src="assets/qr-whatsapp.png" alt="">
+        <div class="rt">WhatsApp community</div>
+        <div class="ru">chat.whatsapp.com</div>
+        <div class="rk">Where it lives between events</div></div>
+
+      <div class="res"><img src="assets/qr-linkedin.png" alt="">
+        <div class="rt">Travis</div>
+        <div class="ru">linkedin.com/in/travcjohnson</div>
+        <div class="rk">Say hello</div></div>
+    </div>
+  </div>
+</section>
+
+</div></div>
+<div id="bar"><span id="sec"></span><span id="cnt"></span></div>
+
+<script>
+const S=[...document.querySelectorAll('.s')];let i=0;
+const bar=document.getElementById('bar'),sec=document.getElementById('sec'),cnt=document.getElementById('cnt');
+function fit(){const c=document.getElementById('canvas');
+  const k=Math.min(innerWidth/1480,(innerHeight-34)/980);c.style.transform='scale('+k+')';}
+function go(n){i=Math.max(0,Math.min(S.length-1,n));
+  S.forEach((s,k)=>s.classList.toggle('on',k===i));
+  sec.textContent=S[i].dataset.sec||'';
+  cnt.textContent=String(i).padStart(2,'0')+' / '+String(S.length-1).padStart(2,'0')
+    +'   '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+  history.replaceState(null,'','#'+i);}
+addEventListener('resize',fit);
+addEventListener('keydown',e=>{
+  if(['ArrowRight','ArrowDown',' ','PageDown','Enter'].includes(e.key)){e.preventDefault();go(i+1);}
+  else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(i-1);}
+  else if(e.key==='Home')go(0); else if(e.key==='End')go(S.length-1);
+  else if(e.key==='b')bar.classList.toggle('hide');
+  else if(e.key.toLowerCase()==='f'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}});
+addEventListener('click',e=>go(i+(e.clientX<innerWidth*0.25?-1:1)));
+setInterval(()=>go(i),30000);
+document.fonts.ready.then(fit);fit();go(location.hash?parseInt(location.hash.slice(1))||0:0);
+</script>
+</body>
+</html>
